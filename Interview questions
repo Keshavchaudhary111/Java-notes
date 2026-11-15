@@ -1,0 +1,467 @@
+# Java Interview Questions and Answers
+
+> Sections: [Core](#core-java) · [OOP](#oop) · [Strings](#strings) · [Exceptions](#exceptions) · [Collections](#collections) · [Java 8+](#java-8-and-above) · [Multithreading](#multithreading) · [JVM & Memory](#jvm--memory) · [Coding Problems](#coding-problems) · [Design & Misc](#design--misc)
+
+---
+
+## Core Java
+
+**1. What is the difference between JDK, JRE and JVM?**
+JVM runs bytecode; JRE = JVM + libraries (to run); JDK = JRE + compiler and tools (to develop).
+
+**2. Why is Java platform independent?**
+`javac` compiles to bytecode, which any OS-specific JVM can execute.
+
+**3. What are the primitive data types?**
+`byte, short, int, long, float, double, char, boolean`.
+
+**4. What is the difference between `==` and `equals()`?**
+`==` compares references (or primitive values). `equals()` compares content when overridden.
+```java
+String a = new String("hi"), b = new String("hi");
+System.out.println(a == b);       // false
+System.out.println(a.equals(b));  // true
+```
+
+**5. What are wrapper classes? What are autoboxing and unboxing?**
+Object versions of primitives (`Integer`, `Double`...). Autoboxing: `int → Integer` automatically; unboxing is the reverse.
+
+**6. Integer cache gotcha?**
+```java
+Integer a = 127, b = 127;  System.out.println(a == b); // true  (cached -128..127)
+Integer c = 128, d = 128;  System.out.println(c == d); // false
+```
+
+**7. What is the `static` keyword?**
+Member belongs to the class, not instances. Static methods can't access instance members directly.
+
+**8. Can we override a static method?**
+No, it is *hidden*, not overridden (resolved at compile time).
+
+**9. Can `main()` be overloaded? Can we run without `main`?**
+Yes, it can be overloaded, but the JVM calls only `public static void main(String[] args)`. Since Java 7 a class without `main` fails to run (static blocks alone aren't enough).
+
+**10. Is Java pass-by-value or pass-by-reference?**
+Always pass-by-value. For objects, the reference value is copied.
+
+**11. What is the difference between `final`, `finally`, `finalize`?**
+- `final`: constant / non-overridable / non-inheritable
+- `finally`: block that always runs after try/catch
+- `finalize()`: called by GC before collection (deprecated)
+
+**12. What is a `transient` keyword?** Excludes a field from serialization.
+
+**13. What does `volatile` do?** Guarantees visibility across threads and prevents reordering, but not atomicity.
+
+---
+
+## OOP
+
+**14. Explain the four pillars of OOP.**
+Encapsulation (data hiding), Inheritance (reuse), Polymorphism (many forms), Abstraction (hide complexity).
+
+**15. Overloading vs Overriding?**
+
+| Overloading | Overriding |
+|-------------|------------|
+| Same class, same name, different params | Subclass redefines parent method |
+| Compile-time | Runtime |
+| Return type can differ | Same signature (covariant return allowed) |
+
+**16. Abstract class vs Interface?**
+Abstract class: state, constructors, partial implementation, single inheritance. Interface: contract, multiple implementation, default/static methods since Java 8, private methods since Java 9.
+
+**17. Why doesn't Java support multiple inheritance with classes?**
+The diamond problem (ambiguity). Interfaces allow it; with conflicting defaults you must override.
+
+**18. What is a constructor? Can it be private? Can it be inherited?**
+It initializes objects. Yes it can be private (Singleton). Constructors are not inherited, but called via `super()`.
+
+**19. What is `this` vs `super`?**
+`this` = current object; `super` = parent class reference (constructor/method/field).
+
+**20. What is a marker interface?** Interface with no methods (`Serializable`, `Cloneable`) that tags a class.
+
+**21. Shallow copy vs deep copy?**
+Shallow copies references of nested objects; deep copies the nested objects too.
+```java
+class A implements Cloneable {
+    int[] arr = {1,2};
+    protected Object clone() throws CloneNotSupportedException { return super.clone(); } // shallow
+}
+```
+
+**22. What is the `equals()` and `hashCode()` contract?**
+Equal objects must have equal hash codes. Unequal objects may share hash codes (collision). Breaking this causes bugs in `HashMap`/`HashSet`.
+
+**23. What is immutability? How to create an immutable class?**
+Make the class `final`, fields `private final`, no setters, and defensively copy mutable fields.
+```java
+public final class Money {
+    private final double amount;
+    public Money(double amount) { this.amount = amount; }
+    public double getAmount() { return amount; }
+}
+```
+
+**24. What is coupling and cohesion?** Aim for low coupling (little dependency between classes) and high cohesion (class focused on one responsibility).
+
+**25. What are SOLID principles?** Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.
+
+---
+
+## Strings
+
+**26. Why is `String` immutable?**
+Security (class loading, credentials), thread-safety, String Pool caching, and a cached hashCode that makes it a good map key.
+
+**27. `String` vs `StringBuilder` vs `StringBuffer`?**
+String is immutable; StringBuilder is mutable and not thread-safe (fast); StringBuffer is mutable and synchronized.
+
+**28. What is the String Pool? What does `intern()` do?**
+A heap region storing unique string literals. `intern()` returns the pooled reference.
+```java
+String a = "java";
+String b = new String("java").intern();
+System.out.println(a == b); // true
+```
+
+**29. How many objects does `new String("abc")` create?**
+Up to 2: one in the pool (if absent) and one on the heap.
+
+**30. Reverse a string / check palindrome.**
+```java
+String rev = new StringBuilder(s).reverse().toString();
+boolean isPal = s.equals(rev);
+```
+
+---
+
+## Exceptions
+
+**31. Checked vs unchecked exceptions?**
+Checked are verified at compile time (`IOException`). Unchecked extend `RuntimeException` (`NullPointerException`).
+
+**32. `throw` vs `throws`?**
+`throw` raises an exception object; `throws` declares exceptions a method may throw.
+
+**33. Will `finally` run if there is a `return` in `try`?**
+Yes. It runs before returning. It won't run only if `System.exit()` is called or the JVM crashes.
+```java
+static int test() {
+    try { return 1; }
+    finally { System.out.println("finally"); }
+}
+```
+
+**34. Can we have `try` without `catch`?** Yes, with `finally` or as try-with-resources.
+
+**35. What is try-with-resources?** Auto-closes resources implementing `AutoCloseable`.
+
+**36. Error vs Exception?** Errors (`OutOfMemoryError`, `StackOverflowError`) are serious JVM problems not meant to be caught.
+
+**37. How do you create a custom exception?** Extend `Exception` (checked) or `RuntimeException` (unchecked).
+
+---
+
+## Collections
+
+**38. ArrayList vs LinkedList?**
+ArrayList: array-backed, O(1) get, O(n) middle insert. LinkedList: O(1) add/remove at ends, O(n) get.
+
+**39. ArrayList vs Vector?** Vector is synchronized (legacy); ArrayList isn't and is faster.
+
+**40. HashMap vs Hashtable vs ConcurrentHashMap?**
+
+| | HashMap | Hashtable | ConcurrentHashMap |
+|--|---------|-----------|-------------------|
+| Thread-safe | No | Yes (whole-map lock) | Yes (fine-grained) |
+| Null key/values | 1 null key, many null values | None | None |
+
+**41. How does HashMap work internally?**
+`hash(key)` → bucket index → linked list/tree of nodes. On collision, `equals()` checks the key. Treeifies at 8 nodes per bucket (Java 8). Resizes (x2) at load factor 0.75.
+
+**42. HashSet vs TreeSet vs LinkedHashSet?**
+HashSet: unordered O(1). LinkedHashSet: insertion order. TreeSet: sorted O(log n), uses a Red-Black tree.
+
+**43. What is the fail-fast vs fail-safe iterator?**
+Fail-fast (`ArrayList`, `HashMap`) throws `ConcurrentModificationException` on structural modification. Fail-safe (`CopyOnWriteArrayList`, `ConcurrentHashMap`) works on a copy/snapshot.
+```java
+for (String s : list) { if (s.equals("a")) list.remove(s); } // CME!
+```
+
+**44. Comparable vs Comparator?**
+Comparable: natural ordering inside the class (`compareTo`). Comparator: external, custom orderings (`compare`).
+
+**45. Why must keys in a HashMap be immutable?**
+If the key's hashCode changes after insertion, you can't find the entry again.
+
+**46. How does `HashSet` ensure uniqueness?** It uses a `HashMap` internally, with elements as keys.
+
+**47. `poll()` vs `remove()` and `peek()` vs `element()`?**
+`poll/peek` return `null` on empty queue; `remove/element` throw an exception.
+
+**48. List vs Set vs Map?** List: ordered, duplicates OK. Set: unique. Map: key-value pairs.
+
+**49. How to make a collection synchronized/immutable?**
+```java
+Collections.synchronizedList(list);
+List.copyOf(list);
+Collections.unmodifiableList(list);
+```
+
+**50. What is the `Collections` vs `Collection`?** `Collection` is an interface; `Collections` is a utility class (`sort`, `reverse`, `shuffle`...).
+
+---
+
+## Java 8 and Above
+
+**51. What are the main Java 8 features?** Lambdas, Streams, functional interfaces, Optional, default/static interface methods, method references, `java.time`.
+
+**52. What is a functional interface?** An interface with exactly one abstract method (`Runnable`, `Comparator`, `Predicate`).
+
+**53. `map()` vs `flatMap()`?**
+```java
+List<List<Integer>> nested = List.of(List.of(1,2), List.of(3));
+nested.stream().flatMap(List::stream).toList(); // [1,2,3]
+```
+`map` is one-to-one; `flatMap` flattens nested streams.
+
+**54. Intermediate vs terminal operations?** Intermediate (lazy, return a Stream): `filter, map, sorted`. Terminal (trigger processing): `collect, forEach, count`.
+
+**55. `findFirst()` vs `findAny()`?** `findAny` is free to return any element (useful for parallel streams).
+
+**56. What is `Optional` and why use it?** A container that may or may not hold a value, reducing `NullPointerException`s.
+
+**57. Find the second-highest number using streams.**
+```java
+int second = nums.stream().distinct()
+    .sorted(Comparator.reverseOrder()).skip(1).findFirst().orElseThrow();
+```
+
+**58. Group employees by department and count.**
+```java
+Map<String, Long> countByDept = emps.stream()
+    .collect(Collectors.groupingBy(Emp::getDept, Collectors.counting()));
+```
+
+**59. Word frequency count.**
+```java
+Map<String, Long> freq = Arrays.stream(text.split("\\s+"))
+    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+```
+
+**60. What are `record` and `sealed` classes?** `record` is an immutable data carrier with auto-generated members (Java 16). `sealed` restricts which classes can extend/implement a type (Java 17).
+
+**61. What are virtual threads?** Lightweight JVM-managed threads (Java 21) that make high-concurrency blocking code cheap.
+
+---
+
+## Multithreading
+
+**62. Process vs thread?** Process = independent program with its own memory. Thread = lightweight unit within a process sharing memory.
+
+**63. `Thread` vs `Runnable` vs `Callable`?**
+`Runnable.run()` returns nothing. `Callable.call()` returns a value and can throw checked exceptions. Prefer implementing `Runnable`/`Callable` over extending `Thread`.
+
+**64. `start()` vs `run()`?** `start()` creates a new thread; calling `run()` directly runs on the current thread.
+
+**65. What is synchronization?** Mutual exclusion on a monitor lock so only one thread executes a critical section at a time.
+
+**66. `synchronized` method vs block?** Block locks a chosen object with smaller scope (better performance); method locks `this` (or the Class for static).
+
+**67. What is a deadlock? How to prevent it?**
+```java
+// Thread 1: lock A then B | Thread 2: lock B then A  → deadlock
+```
+Prevent via a consistent lock order, `tryLock` with timeout, and fewer nested locks.
+
+**68. `wait()` vs `sleep()`?**
+`wait()` releases the lock and must be in a synchronized block (Object method). `sleep()` keeps the lock (Thread static method).
+
+**69. `volatile` vs `synchronized` vs `Atomic`?**
+volatile: visibility only. synchronized: visibility + atomicity + mutual exclusion. Atomic: lock-free atomic operations (CAS).
+
+**70. What is a thread pool? Why use it?** Reuses a fixed set of threads to avoid creation overhead and to bound resource use (`ExecutorService`).
+
+**71. Different thread pool types?** `newFixedThreadPool`, `newCachedThreadPool`, `newSingleThreadExecutor`, `newScheduledThreadPool`, `newWorkStealingPool`.
+
+**72. What is a race condition?** Outcome depends on unsynchronized thread timing.
+```java
+count++; // not atomic: read → add → write
+```
+
+**73. `ConcurrentHashMap` vs `synchronizedMap`?** ConcurrentHashMap uses fine-grained locking/CAS; synchronizedMap locks the entire map.
+
+**74. What is `CompletableFuture`?** Async, composable programming (`supplyAsync`, `thenApply`, `thenCombine`, `exceptionally`).
+
+**75. What are daemon threads?** Background threads that don't block JVM exit (e.g., GC).
+
+**76. Explain the thread lifecycle.** New → Runnable → Running → Blocked/Waiting/Timed Waiting → Terminated.
+
+**77. `ReentrantLock` vs `synchronized`?** ReentrantLock offers `tryLock`, fairness, interruptible locking, and multiple Conditions.
+
+**78. What is ThreadLocal?** Provides each thread its own copy of a variable.
+
+---
+
+## JVM & Memory
+
+**79. Explain JVM memory structure.** Heap (objects), Stack (frames), Metaspace (class metadata), PC register, Native stack.
+
+**80. Stack vs Heap?** Stack: per thread, local variables, fast, auto-freed. Heap: shared, objects, managed by GC.
+
+**81. How does garbage collection work?** Reachability from GC roots; unreachable objects are reclaimed. Generational: Young (Eden, Survivor) → Old.
+
+**82. Which GC algorithms exist?** Serial, Parallel, CMS (removed), G1 (default), ZGC, Shenandoah.
+
+**83. Can you force garbage collection?** No; `System.gc()` is only a request.
+
+**84. What causes `OutOfMemoryError` and `StackOverflowError`?** OOM: heap/metaspace exhausted (leaks, large data). SOE: deep or infinite recursion.
+```java
+static void recurse() { recurse(); } // StackOverflowError
+```
+
+**85. What are the reference types?** Strong, Soft (cleared when memory is low), Weak (cleared at next GC), Phantom.
+
+**86. What is a ClassLoader?** Loads classes into the JVM: Bootstrap, Platform, Application (parent delegation model).
+
+**87. What is JIT?** Compiles frequently executed bytecode ("hot spots") into native code at runtime.
+
+---
+
+## Coding Problems
+
+**88. Fibonacci**
+```java
+static int fib(int n) {
+    int a = 0, b = 1;
+    for (int i = 0; i < n; i++) { int t = a + b; a = b; b = t; }
+    return a;
+}
+```
+
+**89. Prime check**
+```java
+static boolean isPrime(int n) {
+    if (n < 2) return false;
+    for (int i = 2; i * i <= n; i++) if (n % i == 0) return false;
+    return true;
+}
+```
+
+**90. Swap two numbers without a temp**
+```java
+a = a + b; b = a - b; a = a - b;
+```
+
+**91. Find duplicates in an array**
+```java
+Set<Integer> seen = new HashSet<>();
+Set<Integer> dups = new HashSet<>();
+for (int n : arr) if (!seen.add(n)) dups.add(n);
+```
+
+**92. First non-repeating character**
+```java
+Map<Character, Integer> m = new LinkedHashMap<>();
+for (char c : s.toCharArray()) m.merge(c, 1, Integer::sum);
+for (var e : m.entrySet()) if (e.getValue() == 1) { System.out.println(e.getKey()); break; }
+```
+
+**93. Check anagram**
+```java
+char[] a = s1.toCharArray(), b = s2.toCharArray();
+Arrays.sort(a); Arrays.sort(b);
+boolean anagram = Arrays.equals(a, b);
+```
+
+**94. Binary search**
+```java
+static int search(int[] arr, int key) {
+    int lo = 0, hi = arr.length - 1;
+    while (lo <= hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (arr[mid] == key) return mid;
+        else if (arr[mid] < key) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return -1;
+}
+```
+
+**95. Reverse a linked list**
+```java
+Node prev = null, cur = head;
+while (cur != null) {
+    Node next = cur.next;
+    cur.next = prev;
+    prev = cur;
+    cur = next;
+}
+head = prev;
+```
+
+**96. Armstrong number**
+```java
+int sum = 0, t = n;
+while (t > 0) { int d = t % 10; sum += d * d * d; t /= 10; }
+boolean isArmstrong = (sum == n);   // for 3-digit numbers
+```
+
+**97. Thread-safe Singleton (enum)**
+```java
+public enum Singleton { INSTANCE }
+```
+
+**98. Two-sum using HashMap**
+```java
+Map<Integer,Integer> map = new HashMap<>();
+for (int i = 0; i < nums.length; i++) {
+    int need = target - nums[i];
+    if (map.containsKey(need)) return new int[]{map.get(need), i};
+    map.put(nums[i], i);
+}
+```
+
+**99. Producer-Consumer with BlockingQueue**
+```java
+BlockingQueue<Integer> q = new ArrayBlockingQueue<>(5);
+Thread producer = new Thread(() -> { try { for (int i = 0; i < 10; i++) q.put(i); } catch (InterruptedException e) {} });
+Thread consumer = new Thread(() -> { try { while (true) System.out.println(q.take()); } catch (InterruptedException e) {} });
+producer.start(); consumer.start();
+```
+
+---
+
+## Design & Misc
+
+**100. Common design patterns?** Singleton, Factory, Builder, Observer, Strategy, Decorator, Adapter, Proxy.
+
+**101. What is dependency injection?** Passing an object's dependencies from outside (constructor/setter) rather than creating them inside; used heavily in Spring.
+
+**102. What is reflection?** Inspecting and modifying classes, methods, and fields at runtime.
+
+**103. What are annotations?** Metadata on code (`@Override`, `@FunctionalInterface`, custom), processed at compile time or runtime.
+
+**104. What is serialization? What is `serialVersionUID`?** Converting an object to a byte stream. `serialVersionUID` is a version ID checked on deserialization.
+
+**105. What is the difference between `Array` and `ArrayList`?** Array: fixed size, supports primitives. ArrayList: resizable, objects only, rich API.
+
+**106. How do you handle memory leaks in Java?** Close resources, avoid unbounded static collections, remove listeners, use weak references, and profile with VisualVM / JProfiler / heap dumps.
+
+**107. What is the difference between `Stream` and `Collection`?** A Collection stores data; a Stream is a pipeline for processing data (lazy, single-use, doesn't modify the source).
+
+**108. Explain JDBC steps.** Load driver → get Connection → create PreparedStatement → execute → process ResultSet → close resources.
+
+**109. What is Maven/Gradle?** Build and dependency management tools (`pom.xml` / `build.gradle`).
+
+**110. What is the difference between JUnit and Mockito?** JUnit runs tests; Mockito creates mock objects to isolate the unit under test.
+
+---
+
+### Tips for the interview
+- Explain with a small code example whenever you can.
+- Know the *why* behind every answer (e.g., why String is immutable).
+- Practice DSA problems (arrays, strings, hashing, recursion, trees) in Java.
+- Be ready to discuss your projects, Spring Boot, REST APIs, SQL, and Git.
