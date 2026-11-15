@@ -1,0 +1,1004 @@
+# Java Notes: Basic to Advanced
+
+## Table of Contents
+1. [Introduction](#1-introduction)
+2. [Basics: Variables, Data Types, Operators](#2-basics)
+3. [Control Flow](#3-control-flow)
+4. [Arrays and Strings](#4-arrays-and-strings)
+5. [Methods](#5-methods)
+6. [Object-Oriented Programming](#6-oop)
+7. [Exception Handling](#7-exception-handling)
+8. [Collections Framework](#8-collections-framework)
+9. [Generics](#9-generics)
+10. [Lambdas, Streams, Optional](#10-lambdas-streams-optional)
+11. [Modern Java Features (9 to 21)](#11-modern-java-features)
+12. [File I/O and Serialization](#12-file-io-and-serialization)
+13. [Multithreading and Concurrency](#13-multithreading-and-concurrency)
+14. [JVM Internals and Garbage Collection](#14-jvm-internals)
+15. [Annotations and Reflection](#15-annotations-and-reflection)
+16. [Design Patterns](#16-design-patterns)
+17. [JDBC](#17-jdbc)
+18. [Best Practices](#18-best-practices)
+
+---
+
+## 1. Introduction
+
+**Java** is a high-level, object-oriented, platform-independent language ("write once, run anywhere").
+
+| Term | Meaning |
+|------|---------|
+| **JVM** | Java Virtual Machine. Runs bytecode. Platform specific. |
+| **JRE** | JVM + core libraries. Needed to *run* programs. |
+| **JDK** | JRE + compiler (`javac`) + tools. Needed to *develop*. |
+| **Bytecode** | `.class` file produced by `javac`, run by the JVM. |
+| **JIT** | Just-In-Time compiler inside the JVM; turns hot bytecode into native code. |
+
+**Flow:** `Hello.java` → `javac` → `Hello.class` (bytecode) → JVM → machine code
+
+### Hello World
+```java
+public class Hello {
+    public static void main(String[] args) {
+        System.out.println("Hello, Java!");
+    }
+}
+```
+```bash
+javac Hello.java
+java Hello
+```
+
+### Features
+Simple, object-oriented, platform independent, secure, robust (GC, exception handling), multithreaded, high performance (JIT), distributed.
+
+---
+
+## 2. Basics
+
+### Variables and Data Types
+```java
+int age = 25;
+double price = 99.99;
+char grade = 'A';
+boolean isActive = true;
+String name = "Ravi";          // reference type
+var count = 10;                // type inference (Java 10+)
+final double PI = 3.14159;     // constant
+```
+
+| Type | Size | Range / Notes |
+|------|------|---------------|
+| `byte` | 1 byte | -128 to 127 |
+| `short` | 2 bytes | -32,768 to 32,767 |
+| `int` | 4 bytes | about ±2.1 billion |
+| `long` | 8 bytes | use suffix `L` (`10000000000L`) |
+| `float` | 4 bytes | suffix `f` (`3.14f`) |
+| `double` | 8 bytes | default for decimals |
+| `char` | 2 bytes | Unicode character |
+| `boolean` | JVM-dependent | `true` / `false` |
+
+**Primitive vs Reference:** primitives store values (stack); references store addresses of objects (heap).
+
+### Type Casting
+```java
+int a = 10;
+double d = a;          // widening (automatic)
+double x = 9.78;
+int y = (int) x;       // narrowing (manual), y = 9
+```
+
+### Wrapper Classes and Autoboxing
+```java
+Integer boxed = 5;     // autoboxing
+int prim = boxed;      // unboxing
+Integer.parseInt("123");
+Integer.valueOf(10);
+```
+
+### Operators
+```java
+// Arithmetic: + - * / %
+// Relational: == != > < >= <=
+// Logical:    && || !
+// Assignment: = += -= *= /=
+// Unary:      ++ -- 
+// Ternary:
+int max = (a > b) ? a : b;
+// Bitwise: & | ^ ~ << >> >>>
+```
+
+### Taking Input
+```java
+import java.util.Scanner;
+
+Scanner sc = new Scanner(System.in);
+System.out.print("Enter name: ");
+String name = sc.nextLine();
+int n = sc.nextInt();
+sc.close();
+```
+
+---
+
+## 3. Control Flow
+
+### if / else
+```java
+if (marks >= 90) {
+    System.out.println("A");
+} else if (marks >= 75) {
+    System.out.println("B");
+} else {
+    System.out.println("C");
+}
+```
+
+### switch (classic and modern)
+```java
+switch (day) {
+    case 1: System.out.println("Mon"); break;
+    case 2: System.out.println("Tue"); break;
+    default: System.out.println("Other");
+}
+
+// Switch expression (Java 14+)
+String type = switch (day) {
+    case 6, 7 -> "Weekend";
+    default   -> "Weekday";
+};
+```
+
+### Loops
+```java
+for (int i = 0; i < 5; i++) { System.out.println(i); }
+
+int i = 0;
+while (i < 5) { i++; }
+
+do { i--; } while (i > 0);
+
+// for-each
+int[] nums = {1, 2, 3};
+for (int n : nums) System.out.println(n);
+```
+
+### break, continue, labels
+```java
+outer:
+for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        if (j == 2) continue outer;
+        if (i == 2) break outer;
+    }
+}
+```
+
+---
+
+## 4. Arrays and Strings
+
+### Arrays
+```java
+int[] arr = new int[5];
+int[] nums = {5, 2, 9, 1};
+int[][] matrix = {{1, 2}, {3, 4}};
+
+System.out.println(nums.length);
+Arrays.sort(nums);
+System.out.println(Arrays.toString(nums));
+int idx = Arrays.binarySearch(nums, 9);
+int[] copy = Arrays.copyOf(nums, 10);
+```
+
+### Strings
+Strings are **immutable** and live in the **String Pool**.
+
+```java
+String s1 = "hello";            // pool
+String s2 = "hello";            // same pool object
+String s3 = new String("hello");// new heap object
+
+s1 == s2;          // true  (same reference)
+s1 == s3;          // false
+s1.equals(s3);     // true  (content)
+```
+
+Common methods:
+```java
+s.length();  s.charAt(0);  s.substring(1, 3);  s.indexOf("l");
+s.toUpperCase();  s.trim();  s.replace("l", "L");  s.split(",");
+s.contains("ell");  s.isEmpty();  s.isBlank();  String.join("-", "a", "b");
+```
+
+### StringBuilder vs StringBuffer
+| | String | StringBuilder | StringBuffer |
+|--|--------|---------------|--------------|
+| Mutable | No | Yes | Yes |
+| Thread-safe | Yes (immutable) | No | Yes (synchronized) |
+| Speed | Slow for concat | Fastest | Slower than Builder |
+
+```java
+StringBuilder sb = new StringBuilder();
+sb.append("Java").append(" ").append("Rocks");
+sb.reverse();
+sb.insert(0, "Hi ");
+System.out.println(sb);
+```
+
+---
+
+## 5. Methods
+
+```java
+public static int add(int a, int b) {
+    return a + b;
+}
+```
+
+### Overloading (compile-time polymorphism)
+```java
+int add(int a, int b)        { return a + b; }
+double add(double a, double b) { return a + b; }
+int add(int a, int b, int c) { return a + b + c; }
+```
+
+### Varargs
+```java
+static int sum(int... numbers) {
+    int total = 0;
+    for (int n : numbers) total += n;
+    return total;
+}
+sum(1, 2, 3, 4);
+```
+
+### Pass by value
+Java is **always pass-by-value**. For objects, the *reference* is copied, so the object can be modified but the caller's reference can't be reassigned.
+
+### Recursion
+```java
+static int factorial(int n) {
+    return (n <= 1) ? 1 : n * factorial(n - 1);
+}
+```
+
+---
+
+## 6. OOP
+
+### Class and Object
+```java
+public class Student {
+    private String name;     // fields
+    private int age;
+
+    public Student(String name, int age) {   // constructor
+        this.name = name;
+        this.age = age;
+    }
+
+    public String getName() { return name; } // getter
+    public void setName(String name) { this.name = name; }
+
+    public void display() {
+        System.out.println(name + " - " + age);
+    }
+}
+
+Student s = new Student("Asha", 20);
+s.display();
+```
+
+### Constructors
+```java
+class Person {
+    String name;
+    Person() { this("Unknown"); }            // constructor chaining
+    Person(String name) { this.name = name; }
+}
+```
+
+### static
+```java
+class Counter {
+    static int count = 0;        // shared by all objects
+    Counter() { count++; }
+    static void show() { System.out.println(count); }
+    static { System.out.println("static block runs once"); }
+}
+```
+
+### The 4 Pillars
+
+**1. Encapsulation**: private fields + public getters/setters.
+
+**2. Inheritance** (`extends`)
+```java
+class Animal {
+    void eat() { System.out.println("eating"); }
+}
+class Dog extends Animal {
+    void bark() { System.out.println("barking"); }
+}
+```
+- Java supports single class inheritance (multiple via interfaces).
+- `super` calls parent constructor/methods.
+
+**3. Polymorphism**
+- *Compile time:* method overloading.
+- *Runtime:* method overriding.
+```java
+class Shape { void draw() { System.out.println("Shape"); } }
+class Circle extends Shape {
+    @Override void draw() { System.out.println("Circle"); }
+}
+Shape s = new Circle();   // upcasting
+s.draw();                 // prints "Circle"
+```
+
+**4. Abstraction**
+```java
+abstract class Vehicle {
+    abstract void start();
+    void fuel() { System.out.println("fuel"); }   // concrete method
+}
+class Car extends Vehicle {
+    void start() { System.out.println("Car starts"); }
+}
+```
+
+### Interface
+```java
+interface Payment {
+    void pay(double amount);                     // abstract
+    default void receipt() { System.out.println("Receipt"); } // Java 8
+    static void info() { System.out.println("Payment API"); }
+}
+class UPI implements Payment {
+    public void pay(double amount) { System.out.println("Paid " + amount); }
+}
+```
+
+| Abstract Class | Interface |
+|----------------|-----------|
+| Can have state (fields), constructors | Only constants, no constructors |
+| Single inheritance | Multiple implementation |
+| Any access modifiers | Methods public by default |
+| "is-a" with shared code | "can-do" capability/contract |
+
+### Access Modifiers
+| Modifier | Class | Package | Subclass | World |
+|----------|:-----:|:-------:|:--------:|:-----:|
+| `private` | ✔ | | | |
+| default | ✔ | ✔ | | |
+| `protected` | ✔ | ✔ | ✔ | |
+| `public` | ✔ | ✔ | ✔ | ✔ |
+
+### final keyword
+- `final` variable: cannot be reassigned
+- `final` method: cannot be overridden
+- `final` class: cannot be extended (e.g., `String`)
+
+### Inner Classes
+```java
+class Outer {
+    class Inner { }                       // member inner class
+    static class Nested { }               // static nested class
+    void m() {
+        class Local { }                   // local class
+        Runnable r = new Runnable() {     // anonymous class
+            public void run() { }
+        };
+    }
+}
+```
+
+### Enum
+```java
+enum Level {
+    LOW(1), MEDIUM(5), HIGH(10);
+    private final int value;
+    Level(int v) { value = v; }
+    int getValue() { return value; }
+}
+Level.HIGH.getValue();
+for (Level l : Level.values()) System.out.println(l);
+```
+
+### Object class methods
+`toString()`, `equals()`, `hashCode()`, `clone()`, `getClass()`, `finalize()` (deprecated), `wait()/notify()/notifyAll()`.
+
+```java
+@Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Student)) return false;
+    Student s = (Student) o;
+    return age == s.age && Objects.equals(name, s.name);
+}
+@Override
+public int hashCode() { return Objects.hash(name, age); }
+```
+**Contract:** if `a.equals(b)` then `a.hashCode() == b.hashCode()`.
+
+---
+
+## 7. Exception Handling
+
+```
+Throwable
+ ├── Error (OutOfMemoryError, StackOverflowError)  : don't catch
+ └── Exception
+      ├── Checked   (IOException, SQLException)    : must handle/declare
+      └── Unchecked (RuntimeException: NPE, ArithmeticException, IndexOutOfBounds)
+```
+
+```java
+try {
+    int r = 10 / 0;
+} catch (ArithmeticException e) {
+    System.out.println("Error: " + e.getMessage());
+} catch (Exception e) {
+    e.printStackTrace();
+} finally {
+    System.out.println("always runs");
+}
+```
+
+### try-with-resources
+```java
+try (BufferedReader br = new BufferedReader(new FileReader("a.txt"))) {
+    System.out.println(br.readLine());
+} catch (IOException e) {
+    e.printStackTrace();
+}   // br closed automatically (AutoCloseable)
+```
+
+### throw vs throws, custom exception
+```java
+class InsufficientFundsException extends Exception {
+    InsufficientFundsException(String msg) { super(msg); }
+}
+
+void withdraw(double amt) throws InsufficientFundsException {
+    if (amt > balance) throw new InsufficientFundsException("Low balance");
+}
+```
+
+### Multi-catch
+```java
+catch (IOException | SQLException e) { ... }
+```
+
+---
+
+## 8. Collections Framework
+
+```
+Iterable → Collection ─┬─ List  (ArrayList, LinkedList, Vector, Stack)
+                       ├─ Set   (HashSet, LinkedHashSet, TreeSet)
+                       └─ Queue (PriorityQueue, ArrayDeque, LinkedList)
+Map (HashMap, LinkedHashMap, TreeMap, Hashtable, ConcurrentHashMap)  [separate hierarchy]
+```
+
+### List
+```java
+List<String> list = new ArrayList<>();
+list.add("A"); list.add("B"); list.add(1, "X");
+list.get(0); list.remove("B"); list.size(); list.contains("A");
+Collections.sort(list);
+List<Integer> imm = List.of(1, 2, 3);   // immutable
+```
+| ArrayList | LinkedList |
+|-----------|------------|
+| Dynamic array | Doubly linked list |
+| Fast random access O(1) | Fast insert/delete at ends O(1) |
+| Slow middle insert O(n) | Slow get O(n) |
+
+### Set
+```java
+Set<Integer> hs = new HashSet<>();      // unordered, unique
+Set<Integer> lhs = new LinkedHashSet<>();// insertion order
+Set<Integer> ts = new TreeSet<>();      // sorted
+hs.add(1); hs.add(1);                   // size stays 1
+```
+
+### Map
+```java
+Map<String, Integer> map = new HashMap<>();
+map.put("a", 1);
+map.putIfAbsent("b", 2);
+map.get("a");
+map.getOrDefault("z", 0);
+map.containsKey("a");
+map.merge("a", 1, Integer::sum);        // word-count style
+
+for (Map.Entry<String, Integer> e : map.entrySet()) {
+    System.out.println(e.getKey() + "=" + e.getValue());
+}
+```
+
+**How HashMap works:** key → `hashCode()` → bucket index → entries stored in a linked list (converted to a red-black tree when a bucket exceeds 8 entries, Java 8+). `equals()` resolves collisions. Default capacity 16, load factor 0.75, doubles on resize.
+
+### Queue / Deque
+```java
+Queue<Integer> q = new LinkedList<>();
+q.offer(1); q.poll(); q.peek();
+
+PriorityQueue<Integer> pq = new PriorityQueue<>();            // min-heap
+PriorityQueue<Integer> maxPq = new PriorityQueue<>(Collections.reverseOrder());
+
+Deque<Integer> dq = new ArrayDeque<>();
+dq.push(1); dq.pop();   // use as stack
+```
+
+### Iterator
+```java
+Iterator<String> it = list.iterator();
+while (it.hasNext()) {
+    if (it.next().equals("A")) it.remove();   // safe removal
+}
+```
+
+### Comparable vs Comparator
+```java
+class Emp implements Comparable<Emp> {
+    String name; int sal;
+    public int compareTo(Emp o) { return Integer.compare(sal, o.sal); } // natural order
+}
+
+list.sort(Comparator.comparing(Emp::getName).thenComparing(Emp::getSal));
+list.sort(Comparator.comparingInt((Emp e) -> e.sal).reversed());
+```
+
+---
+
+## 9. Generics
+
+```java
+class Box<T> {
+    private T value;
+    Box(T value) { this.value = value; }
+    T get() { return value; }
+}
+Box<String> b = new Box<>("hi");
+
+// Generic method
+static <T> void print(T item) { System.out.println(item); }
+
+// Bounded type
+static <T extends Number> double sum(List<T> list) {
+    double s = 0;
+    for (T n : list) s += n.doubleValue();
+    return s;
+}
+```
+
+### Wildcards
+- `List<?>`: unknown type (read only)
+- `List<? extends Number>`: upper bound (read / **P**roducer)
+- `List<? super Integer>`: lower bound (write / **C**onsumer) → **PECS**
+
+**Type erasure:** generics exist only at compile time; the JVM sees raw types.
+
+---
+
+## 10. Lambdas, Streams, Optional
+
+### Lambda
+```java
+Runnable r = () -> System.out.println("run");
+Comparator<Integer> c = (a, b) -> a - b;
+```
+
+### Functional Interfaces (`java.util.function`)
+| Interface | Method | Example |
+|-----------|--------|---------|
+| `Predicate<T>` | `boolean test(T)` | `x -> x > 5` |
+| `Function<T,R>` | `R apply(T)` | `s -> s.length()` |
+| `Consumer<T>` | `void accept(T)` | `System.out::println` |
+| `Supplier<T>` | `T get()` | `() -> new ArrayList<>()` |
+| `BiFunction<T,U,R>` | `R apply(T,U)` | `(a,b) -> a+b` |
+| `UnaryOperator<T>` / `BinaryOperator<T>` | | |
+
+Custom: annotate with `@FunctionalInterface` (exactly one abstract method).
+
+### Method References
+```java
+list.forEach(System.out::println);       // static/instance of object
+list.stream().map(String::toUpperCase);  // instance method of type
+Supplier<List<String>> s = ArrayList::new; // constructor
+```
+
+### Streams
+```java
+List<Integer> nums = List.of(1, 2, 3, 4, 5, 6);
+
+List<Integer> evenSquares = nums.stream()
+    .filter(n -> n % 2 == 0)
+    .map(n -> n * n)
+    .collect(Collectors.toList());              // [4, 16, 36]
+
+int sum = nums.stream().mapToInt(Integer::intValue).sum();
+Optional<Integer> max = nums.stream().max(Integer::compare);
+long count = nums.stream().filter(n -> n > 3).count();
+boolean any = nums.stream().anyMatch(n -> n > 5);
+
+// Grouping
+Map<Boolean, List<Integer>> parts =
+    nums.stream().collect(Collectors.partitioningBy(n -> n % 2 == 0));
+
+Map<Integer, List<String>> byLen =
+    words.stream().collect(Collectors.groupingBy(String::length));
+
+// Joining
+String joined = words.stream().collect(Collectors.joining(", "));
+
+// flatMap
+List<String> flat = listOfLists.stream().flatMap(List::stream).toList();
+
+// Sorting, distinct, limit, skip
+nums.stream().sorted(Comparator.reverseOrder()).distinct().limit(3).toList();
+
+// Parallel
+nums.parallelStream().forEach(System.out::println);
+```
+- **Intermediate ops** (lazy): `filter, map, flatMap, sorted, distinct, limit, skip, peek`
+- **Terminal ops**: `collect, forEach, reduce, count, min, max, anyMatch, findFirst`
+- A stream can be used **only once**.
+
+### Optional
+```java
+Optional<String> opt = Optional.ofNullable(getName());
+String v = opt.orElse("default");
+opt.ifPresent(System.out::println);
+String upper = opt.map(String::toUpperCase).orElseThrow();
+```
+
+---
+
+## 11. Modern Java Features
+
+| Version | Feature |
+|---------|---------|
+| 8 | Lambdas, Streams, Optional, default methods, `java.time` |
+| 9 | Modules, `List.of()`, `Map.of()` |
+| 10 | `var` |
+| 11 | `String.isBlank()`, `strip()`, `lines()`, `repeat()`, HttpClient |
+| 14 | Switch expressions |
+| 15 | Text blocks |
+| 16 | Records, pattern matching for `instanceof` |
+| 17 (LTS) | Sealed classes |
+| 21 (LTS) | Virtual threads, pattern matching for switch, record patterns |
+
+```java
+// Records: immutable data carrier (auto constructor, getters, equals, hashCode, toString)
+record Point(int x, int y) { }
+Point p = new Point(1, 2);
+p.x();
+
+// Text blocks
+String json = """
+    {
+      "name": "Java"
+    }
+    """;
+
+// Pattern matching instanceof
+if (obj instanceof String s && s.length() > 3) {
+    System.out.println(s.toUpperCase());
+}
+
+// Sealed classes
+sealed interface Shape permits Circle, Square { }
+record Circle(double r) implements Shape { }
+record Square(double side) implements Shape { }
+
+// Pattern matching for switch (21)
+double area = switch (shape) {
+    case Circle c -> Math.PI * c.r() * c.r();
+    case Square s -> s.side() * s.side();
+};
+
+// Virtual threads (21)
+Thread.startVirtualThread(() -> System.out.println("lightweight"));
+```
+
+### java.time (date/time API)
+```java
+LocalDate today = LocalDate.now();
+LocalDateTime now = LocalDateTime.now();
+LocalDate d = LocalDate.of(2025, 1, 15).plusDays(10);
+DateTimeFormatter f = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+String s = today.format(f);
+Duration.between(t1, t2);  Period.between(d1, d2);
+```
+
+---
+
+## 12. File I/O and Serialization
+
+```java
+// Read all lines (NIO)
+List<String> lines = Files.readAllLines(Path.of("data.txt"));
+
+// Write
+Files.writeString(Path.of("out.txt"), "Hello");
+
+// Buffered reading
+try (BufferedReader br = new BufferedReader(new FileReader("data.txt"))) {
+    String line;
+    while ((line = br.readLine()) != null) System.out.println(line);
+}
+
+// Writing
+try (BufferedWriter bw = new BufferedWriter(new FileWriter("out.txt"))) {
+    bw.write("Hello"); bw.newLine();
+}
+
+// Stream of lines
+try (Stream<String> s = Files.lines(Path.of("data.txt"))) {
+    s.filter(l -> !l.isBlank()).forEach(System.out::println);
+}
+```
+
+### Serialization
+```java
+class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+    String name;
+    transient String password;     // not serialized
+}
+
+try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("u.ser"))) {
+    oos.writeObject(new User());
+}
+try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("u.ser"))) {
+    User u = (User) ois.readObject();
+}
+```
+
+---
+
+## 13. Multithreading and Concurrency
+
+### Creating threads
+```java
+// 1. Extend Thread
+class MyThread extends Thread {
+    public void run() { System.out.println("Thread running"); }
+}
+new MyThread().start();
+
+// 2. Implement Runnable (preferred)
+Thread t = new Thread(() -> System.out.println("Runnable"));
+t.start();
+t.join();      // wait for completion
+```
+
+### Thread lifecycle
+`NEW → RUNNABLE → (BLOCKED / WAITING / TIMED_WAITING) → TERMINATED`
+
+### Synchronization
+```java
+class Counter {
+    private int count;
+    public synchronized void inc() { count++; }          // method lock
+
+    public void inc2() {
+        synchronized (this) { count++; }                 // block lock
+    }
+}
+```
+
+### volatile and Atomic
+```java
+private volatile boolean running = true;   // visibility guarantee (not atomicity)
+
+AtomicInteger ai = new AtomicInteger();
+ai.incrementAndGet();                      // lock-free atomic
+```
+
+### wait / notify (producer-consumer)
+```java
+synchronized (lock) {
+    while (queue.isEmpty()) lock.wait();
+    lock.notifyAll();
+}
+```
+
+### Deadlock
+Occurs when threads hold locks and wait for each other. Avoid with consistent lock ordering, timeouts (`tryLock`), and minimal lock scope.
+
+### ExecutorService (thread pools)
+```java
+ExecutorService ex = Executors.newFixedThreadPool(4);
+Future<Integer> f = ex.submit(() -> 42);
+System.out.println(f.get());
+ex.shutdown();
+```
+
+### CompletableFuture
+```java
+CompletableFuture<String> cf = CompletableFuture
+    .supplyAsync(() -> "Hello")
+    .thenApply(s -> s + " World")
+    .thenCombine(CompletableFuture.supplyAsync(() -> "!"), String::concat);
+System.out.println(cf.join());
+```
+
+### Locks and concurrent collections
+```java
+ReentrantLock lock = new ReentrantLock();
+lock.lock();
+try { /* critical section */ } finally { lock.unlock(); }
+
+ConcurrentHashMap<String, Integer> chm = new ConcurrentHashMap<>();
+CopyOnWriteArrayList<String> cow = new CopyOnWriteArrayList<>();
+BlockingQueue<Integer> bq = new LinkedBlockingQueue<>();
+CountDownLatch latch = new CountDownLatch(3);
+```
+
+---
+
+## 14. JVM Internals
+
+### Memory areas
+| Area | Stores |
+|------|--------|
+| **Heap** | Objects (Young: Eden + S0/S1, Old/Tenured) |
+| **Stack** (per thread) | Method frames, local variables, references |
+| **Metaspace** | Class metadata (replaced PermGen in Java 8) |
+| **PC Register** | Current instruction per thread |
+| **Native Method Stack** | Native code calls |
+
+### Class loading
+Bootstrap → Platform (Extension) → Application class loader. Steps: **Loading → Linking (verify, prepare, resolve) → Initialization**.
+
+### Garbage Collection
+- Objects unreachable from GC roots are eligible for collection.
+- **Minor GC** cleans Young gen; **Major/Full GC** cleans Old gen.
+- Collectors: Serial, Parallel, **G1** (default since 9), ZGC, Shenandoah.
+```java
+System.gc();   // only a hint; never rely on it
+```
+
+### Memory leaks in Java
+Static collections that grow, unclosed resources, listeners not removed, bad `equals/hashCode` keys in maps.
+
+### JVM tuning flags
+```bash
+java -Xms512m -Xmx2g -XX:+UseG1GC MyApp
+```
+
+---
+
+## 15. Annotations and Reflection
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+@interface Test { String value() default ""; }
+
+class Demo { @Test("hello") void run() { } }
+```
+
+### Reflection
+```java
+Class<?> c = Class.forName("com.example.Student");
+Object obj = c.getDeclaredConstructor().newInstance();
+Method m = c.getDeclaredMethod("display");
+m.setAccessible(true);
+m.invoke(obj);
+
+for (Field f : c.getDeclaredFields()) System.out.println(f.getName());
+```
+Used by frameworks like Spring and Hibernate. It is powerful but slower and breaks encapsulation.
+
+---
+
+## 16. Design Patterns
+
+### Singleton (thread-safe, enum)
+```java
+public enum Singleton {
+    INSTANCE;
+    public void doWork() { }
+}
+
+// Double-checked locking
+class Config {
+    private static volatile Config instance;
+    private Config() { }
+    static Config getInstance() {
+        if (instance == null) {
+            synchronized (Config.class) {
+                if (instance == null) instance = new Config();
+            }
+        }
+        return instance;
+    }
+}
+```
+
+### Factory
+```java
+interface Shape { void draw(); }
+class ShapeFactory {
+    static Shape create(String type) {
+        return switch (type) {
+            case "circle" -> () -> System.out.println("Circle");
+            case "square" -> () -> System.out.println("Square");
+            default -> throw new IllegalArgumentException();
+        };
+    }
+}
+```
+
+### Builder
+```java
+class Pizza {
+    private final String size; private final boolean cheese;
+    private Pizza(Builder b) { size = b.size; cheese = b.cheese; }
+    static class Builder {
+        private String size; private boolean cheese;
+        Builder size(String s) { size = s; return this; }
+        Builder cheese(boolean c) { cheese = c; return this; }
+        Pizza build() { return new Pizza(this); }
+    }
+}
+Pizza p = new Pizza.Builder().size("L").cheese(true).build();
+```
+
+### Observer, Strategy, Decorator, Adapter
+Know the idea of each:
+- **Observer:** subject notifies subscribers of changes
+- **Strategy:** swap algorithms at runtime via an interface
+- **Decorator:** wrap objects to add behavior (e.g., `BufferedReader(new FileReader())`)
+- **Adapter:** convert one interface to another
+
+### SOLID
+- **S**ingle Responsibility
+- **O**pen/Closed
+- **L**iskov Substitution
+- **I**nterface Segregation
+- **D**ependency Inversion
+
+---
+
+## 17. JDBC
+
+```java
+String url = "jdbc:mysql://localhost:3306/mydb";
+try (Connection con = DriverManager.getConnection(url, "user", "pass");
+     PreparedStatement ps = con.prepareStatement("SELECT * FROM users WHERE id = ?")) {
+
+    ps.setInt(1, 5);
+    try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            System.out.println(rs.getString("name"));
+        }
+    }
+} catch (SQLException e) {
+    e.printStackTrace();
+}
+```
+Always use `PreparedStatement` (prevents SQL injection).
+
+---
+
+## 18. Best Practices
+
+- Prefer composition over inheritance.
+- Program to interfaces (`List<String> l = new ArrayList<>()`).
+- Make classes immutable where possible.
+- Close resources with try-with-resources.
+- Don't catch `Exception` blindly; never swallow exceptions silently.
+- Override `equals` and `hashCode` together.
+- Use `StringBuilder` in loops.
+- Use meaningful names, small methods, and unit tests (JUnit 5).
+- Prefer `Optional` over returning `null`.
+
+### Next steps
+Build Maven/Gradle projects, learn JUnit & Mockito, then Spring Boot, Hibernate/JPA, REST APIs, and Docker.
